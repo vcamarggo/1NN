@@ -1,7 +1,10 @@
 # Prerequisites
 *.d
+<<<<<<< HEAD
 /bases/*
 *.data
+=======
+>>>>>>> b418bb8ae0eb10c47cd6b5b2ba8d05e63f731738
 
 # Object files
 *.o
