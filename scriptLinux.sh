@@ -1,1 +1,1 @@
-time (echo $1 | ./pc.exe) &> $1.out
+time (echo $1 | ./1NN-paralelo.exe) &> $1-paralelo.out
