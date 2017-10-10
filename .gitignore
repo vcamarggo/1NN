@@ -1,10 +1,7 @@
 # Prerequisites
 *.d
-<<<<<<< HEAD
 /bases/*
 *.data
-=======
->>>>>>> b418bb8ae0eb10c47cd6b5b2ba8d05e63f731738
 
 # Object files
 *.o
@@ -35,7 +32,6 @@
 
 # Executables
 *.exe
-*.out
 *.app
 *.i*86
 *.x86_64
