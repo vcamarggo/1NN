@@ -1,15 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <float.h>
+#include <math.h>
 
 #define TRUE 1
 #define FALSE 0
 
 float **matrizTreino;
 float **matrizTeste;
-char **classe;
+char **classeTreino;
+char **classeTeste;
 char *conteudoDasLinhas[100000];
-int numeroDeLinhasLidas;
+int numeroDeLinhasTreino;
+int numeroDeLinhasTeste;
 int qtdeAtributos;
 char *numeroDeColunas;
 
@@ -45,12 +49,19 @@ void leArquivo(char *s[], int *linhasLidas, char *nomeArquivo)
     fclose(fp);
 }
 
-void preparaMatriz(char *linhas[], int qtdeLinhasLidas, int qtdeAtributos,float **matriz, int isTreino)
+float **preparaMatriz(char *linhas[], int qtdeLinhasLidas, int qtdeAtributos, int isTreino)
 {
     char *token;
-
+	float **matriz;
     matriz = (float **)calloc(qtdeLinhasLidas, sizeof(float));
-    classe = (char **) malloc(qtdeLinhasLidas * 128);
+   
+    if(isTreino){
+		classeTreino = (char **) malloc(qtdeLinhasLidas * 128);
+	}
+	else{
+		classeTeste = (char **) malloc(qtdeLinhasLidas * 128);
+	}
+   
     for (int i = 0; i < qtdeLinhasLidas; i++)
     {
         matriz[i] = (float *)calloc(qtdeAtributos, sizeof(float));
@@ -75,9 +86,12 @@ void preparaMatriz(char *linhas[], int qtdeLinhasLidas, int qtdeAtributos,float 
             j++;
         } while (token != 0 && j < (qtdeAtributos));
 		if(isTreino){
-			classe[i] = strtok(NULL, ",");
+			classeTreino[i] = strtok(strtok(NULL, ","),"\n");
+		}else{
+			classeTeste[i] = strtok(strtok(NULL, ","),"\n");
 		}
     }
+    return matriz;
 }
 
 
@@ -88,33 +102,63 @@ void criaNomeArquivo(char *nomeArquivo)
     strcat(nomeArquivo, extensaoArquivo);
 }
 
-void preencheVetorTrain()
+void preencheVetorTreino()
 {
     char nomeArquivo[14] = "bases\\train_";
     criaNomeArquivo(nomeArquivo);
-    leArquivo(conteudoDasLinhas, &numeroDeLinhasLidas, nomeArquivo);
+    leArquivo(conteudoDasLinhas, &numeroDeLinhasTreino, nomeArquivo);
     printf("Preparando matriz de treino...\n");
-    preparaMatriz(conteudoDasLinhas, numeroDeLinhasLidas, qtdeAtributos, matrizTreino, TRUE);
+    matrizTreino = preparaMatriz(conteudoDasLinhas, numeroDeLinhasTreino, qtdeAtributos, TRUE);
 }
 
-void preencheVetorTest()
+void preencheVetorTeste()
 {
     char nomeArquivo[13] = "bases\\test_";
     criaNomeArquivo(nomeArquivo);
-    leArquivo(conteudoDasLinhas, &numeroDeLinhasLidas, nomeArquivo);
+    leArquivo(conteudoDasLinhas, &numeroDeLinhasTeste, nomeArquivo);
     printf("Preparando matriz de teste...\n");
-    preparaMatriz(conteudoDasLinhas, numeroDeLinhasLidas, qtdeAtributos, matrizTeste, FALSE);
+    matrizTeste = preparaMatriz(conteudoDasLinhas, numeroDeLinhasTeste, qtdeAtributos, FALSE);
+}
+
+float calculaDistanciaEuclidianaSimplificada(int i, int j, int k){
+	return pow(matrizTeste[i][k] - matrizTreino[j][k], 2); 
 }
 
 int main()
 {
+	float somaEuclidiana;
+	float menorEuclidiana = FLT_MAX;
+	int indiceMenorEuclidiana;
+	
 	numeroDeColunas = (char *)malloc(4 * sizeof(char));
     printf("Digite a quantidade de atributos do arquivo desejado:");
     scanf("%4s", numeroDeColunas);
     qtdeAtributos = strtol(numeroDeColunas, (char **)NULL, 10);
      
-    preencheVetorTrain();
-    preencheVetorTest();
+    preencheVetorTreino();
+    preencheVetorTeste();
+    
+    for(int i=0; i < numeroDeLinhasTeste;i++){
+    	menorEuclidiana = FLT_MAX;
+		for(int j=0; j < numeroDeLinhasTreino;j++){
+    		somaEuclidiana = 0;
+	    	for(int k=0; k<qtdeAtributos;k++){
+	    		somaEuclidiana += calculaDistanciaEuclidianaSimplificada(i,j,k);
+			}	
+			somaEuclidiana = sqrt(somaEuclidiana);
+			if(menorEuclidiana > somaEuclidiana){
+				menorEuclidiana = somaEuclidiana;
+				indiceMenorEuclidiana = j;
+			}
+		}
+		if(strcmp(classeTreino[indiceMenorEuclidiana], classeTeste[i]) == 0){
+		printf("Acertou! A musica %i e do genero %s\n", i, classeTreino[indiceMenorEuclidiana]);
+		}else{
+			printf("Errou! A musica %i e do genero %s, mas o algoritmo indicou ser do genero %s\n",
+			 i, classeTeste[i], classeTreino[indiceMenorEuclidiana]);
+		}
+		
+	}
 	
     return 0;
 }
