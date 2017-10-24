@@ -109,7 +109,7 @@ void preencheVetorTeste() {
 }
 
 double calculaDistanciaEuclidianaSimplificada(int i, int j, int k) {
-    return pow(matrizTeste[i][k] - matrizTreino[j][k], 2);
+    return matrizTeste[i][k] - matrizTreino[j][k];
 }
 
 void *treinaParalelamente(void *arg) {
@@ -119,7 +119,6 @@ void *treinaParalelamente(void *arg) {
         for (int k = 0; k < qtdeAtributos; k++) {
             somaEuclidiana += calculaDistanciaEuclidianaSimplificada(testeAtual, j, k);
         }
-        somaEuclidiana = sqrt(somaEuclidiana);
         if (menorEuclidiana > somaEuclidiana) {
             menorEuclidiana = somaEuclidiana;
             indiceMenorEuclidiana = j;

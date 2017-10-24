@@ -116,6 +116,8 @@ int main() {
 
     preencheVetorTreino();
     preencheVetorTeste();
+    int acerto = 0;
+    int erro = 0;
 
     for (int i = 0; i < numeroDeLinhasTeste; i++) {
         menorEuclidiana = FLT_MAX;
@@ -131,13 +133,17 @@ int main() {
             }
         }
         if (strcmp(classeTreino[indiceMenorEuclidiana], classeTeste[i]) == 0) {
+            acerto++;
             printf("Acertou! A musica %i e do genero %s\n", i, classeTreino[indiceMenorEuclidiana]);
         } else {
+            erro++;
             printf("Errou! A musica %i e do genero %s, mas o algoritmo indicou ser do genero %s\n",
                     i, classeTeste[i], classeTreino[indiceMenorEuclidiana]);
         }
+        
 
     }
-
+        printf("acerto %i\n", acerto);
+        printf("erro %i", erro);
     return 0;
 }
