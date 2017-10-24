@@ -143,7 +143,7 @@ int main() {
         
 
     }
-        printf("acerto %i\n", acerto);
-        printf("erro %i", erro);
+        printf("O algoritmo acertou %i\n", acerto);
+        printf("O algoritmo errou %i", erro);
     return 0;
 }

@@ -15,9 +15,9 @@ char **classeTeste;
 char *conteudoDasLinhas[100000];
 int numeroDeLinhasTreino, numeroDeThreads, numeroDeLinhasTeste, qtdeAtributos;
 char *numeroDeColunas;
-double somaEuclidiana;
 double menorEuclidiana = FLT_MAX;
 int testeAtual, indiceMenorEuclidiana;
+pthread_mutex_t mut =PTHREAD_MUTEX_INITIALIZER;
 
 void leArquivo(char *s[], int *linhasLidas, char *nomeArquivo) {
     char *line = NULL;
@@ -109,24 +109,27 @@ void preencheVetorTeste() {
 }
 
 double calculaDistanciaEuclidianaSimplificada(int i, int j, int k) {
-    return matrizTeste[i][k] - matrizTreino[j][k];
+    return pow(matrizTeste[i][k] - matrizTreino[j][k],2);
 }
 
 void *treinaParalelamente(void *arg) {
     int indiceInicial = (int) arg;
     for (int j = indiceInicial; j < numeroDeLinhasTreino; j += numeroDeThreads) {
-        somaEuclidiana = 0;
+        double somaEuclidiana = 0;
         for (int k = 0; k < qtdeAtributos; k++) {
             somaEuclidiana += calculaDistanciaEuclidianaSimplificada(testeAtual, j, k);
         }
+        somaEuclidiana = sqrt(somaEuclidiana);
+        pthread_mutex_lock(&mut);
         if (menorEuclidiana > somaEuclidiana) {
             menorEuclidiana = somaEuclidiana;
             indiceMenorEuclidiana = j;
         }
+        pthread_mutex_unlock(&mut);
     }
 }
 
-void *criaThreads(int numeroDeThreads) {
+pthread_t *criaThreads(int numeroDeThreads) {
     pthread_t *t;
     t = (pthread_t *) malloc(numeroDeThreads * sizeof (pthread_t));
     for (int i = 0; i < numeroDeThreads; i++) {
@@ -149,21 +152,30 @@ int main() {
 
     preencheVetorTreino();
     preencheVetorTeste();
-
+    int acerto = 0;
+    int erro = 0;
 
     for (testeAtual = 0; testeAtual < numeroDeLinhasTeste; testeAtual++) {
         menorEuclidiana = FLT_MAX;
 
         t = criaThreads(numeroDeThreads);
+        
+        for (int i = 0; i < numeroDeThreads; i++) {
+            pthread_join(t[i],NULL);
+        }
 
         if (strcmp(classeTreino[indiceMenorEuclidiana], classeTeste[testeAtual]) == 0) {
+            acerto++;
             printf("Acertou! A musica %i e do genero %s\n", testeAtual, classeTreino[indiceMenorEuclidiana]);
         } else {
+            erro++;
             printf("Errou! A musica %i e do genero %s, mas o algoritmo indicou ser do genero %s\n",
                     testeAtual, classeTeste[testeAtual], classeTreino[indiceMenorEuclidiana]);
         }
 
     }
+    printf("O algoritmo acertou %i\n", acerto);
+    printf("O algoritmo errou %i", erro);
 
     return 0;
 }
